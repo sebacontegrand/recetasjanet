@@ -1,0 +1,105 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password String
+  name     String?
+}
+
+model Recipe {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String?
+  story       String?
+  
+  portions    Int?
+  prepTime    Int?
+  cookTime    Int?
+  difficulty  String?
+  
+  notes       String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  
+  ingredients IngredientLine[]
+  steps       Step[]
+  media       MediaAsset[]
+  tags        Tag[]
+  revisions   Revision[]
+}
+
+model Category {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  slug    String   @unique
+  recipes Recipe[]
+}
+
+model Tag {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  slug    String   @unique
+  recipes Recipe[]
+}
+
+model IngredientLine {
+  id       String  @id @default(cuid())
+  recipeId String
+  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  order    Int     @default(0)
+  item     String
+  quantity Float?
+  unit     String?
+  note     String?
+}
+
+model Step {
+  id       String  @id @default(cuid())
+  recipeId String
+  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  order    Int     @default(0)
+  text     String
+  timer    Int?
+  
+  media    MediaAsset[]
+}
+
+model MediaAsset {
+  id       String  @id @default(cuid())
+  url      String
+  type     String  // 'image' | 'video'
+  alt      String?
+  caption  String?
+  order    Int     @default(0)
+  
+  recipeId String?
+  recipe   Recipe? @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  stepId   String?
+  step     Step?   @relation(fields: [stepId], references: [id], onDelete: Cascade)
+}
+
+model Revision {
+  id        String   @id @default(cuid())
+  recipeId  String
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  data      String   // JSON stringified snapshot
+  createdAt DateTime @default(now())
+}
