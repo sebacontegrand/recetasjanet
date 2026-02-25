@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client'
-
 import { PrismaLibSql } from '@prisma/adapter-libsql'
+
 const config = {
-    url: process.env.DATABASE_URL || 'file:./dev.db',
+    url: process.env.DATABASE_URL!,
     authToken: process.env.TURSO_AUTH_TOKEN,
 }
 
